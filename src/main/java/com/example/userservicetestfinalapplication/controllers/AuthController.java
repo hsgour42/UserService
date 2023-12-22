@@ -31,7 +31,7 @@ public class AuthController {
         );
         return new ResponseEntity<>(responseDto , HttpStatus.CREATED);
     };
-    @PostMapping("/signin")
+    @GetMapping("/signin")
     public ResponseEntity<UserResponseDto> signIn(
             @RequestBody SignInRequestDto request
     )throws Exception{
@@ -45,18 +45,17 @@ public class AuthController {
             @RequestBody SignOutResponseDto request
     ){
          authService.signOut(
-                    request.getId(),
+                    request.getUserId(),
                     request.getToken()
         );
         return null;
     };
-    @PostMapping("/validate/{id}")
+    @PostMapping("/validate")
     public ResponseEntity<SessionStatus> validateToken(
-            @PathVariable("id") UUID id,
             @RequestBody ValidateTokenRequestDto request
     ){
         SessionStatus sessionStatus = authService.validateToken(
-                id,
+                request.getUserID(),
                 request.getToken()
         );
         return new ResponseEntity<>(sessionStatus , HttpStatus.OK);
