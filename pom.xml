@@ -80,6 +80,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!--Spring Security For OAuth2 Dependency-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-authorization-server</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -5,12 +5,15 @@ import com.example.userservicetestfinalapplication.dtos.UserResponseDto;
 import com.example.userservicetestfinalapplication.exceptions.InvalidPasswordException;
 import com.example.userservicetestfinalapplication.exceptions.SessionLimitExceededException;
 import com.example.userservicetestfinalapplication.exceptions.UserNotFoundException;
+import com.example.userservicetestfinalapplication.models.Role;
 import com.example.userservicetestfinalapplication.models.Session;
 import com.example.userservicetestfinalapplication.models.SessionStatus;
 import com.example.userservicetestfinalapplication.models.User;
 import com.example.userservicetestfinalapplication.repositories.SessionRepository;
 import com.example.userservicetestfinalapplication.repositories.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -140,7 +143,32 @@ public class AuthService {
             UUID userId,
             String token
     ){
-        Optional<Session> userSession = sessionRepository.findByUser_IdAndToken(userId , token);
-        return userSession.map(Session::getSessionStatus).orElse(SessionStatus.ENDED);
+        Optional<Session> userSessionOptional = sessionRepository.findByUser_IdAndToken(userId , token);
+
+        if(userSessionOptional.isEmpty()){
+            return null;
+        }
+
+        Session session = userSessionOptional.get();
+        if(!session.getSessionStatus().equals(SessionStatus.ACTIVE)){
+            return SessionStatus.ENDED;
+        }
+
+        Date currentDate = new Date();
+        if(session.getExpiringAt().before(currentDate)){
+            return SessionStatus.ENDED;
+        }
+
+        //JWT Decoding.
+        Jws<Claims> jwsClaims = Jwts.parser().build().parseSignedClaims(token);
+
+        String email = (String) jwsClaims.getPayload().get("email");
+        List<Role> roles = (List<Role>) jwsClaims.getPayload().get("role");
+
+//        if(rejectedEmailsList.contains(email)){
+//
+//        }
+
+        return SessionStatus.ACTIVE;
     };
 }
